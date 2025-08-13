@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="25" viewBox="0 0 40 25">
+  <rect width="40" height="25" rx="4" fill="#006FCF"/>
+  <rect x="2" y="2" width="36" height="21" rx="2" fill="none" stroke="white" stroke-width="0.5"/>
+  <text x="20" y="10" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="white" text-anchor="middle">AMERICAN</text>
+  <text x="20" y="16" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="white" text-anchor="middle">EXPRESS</text>
+  <rect x="32" y="18" width="6" height="4" rx="1" fill="white"/>
+</svg>

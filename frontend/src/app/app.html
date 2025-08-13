@@ -1,0 +1,156 @@
+<div class="app">
+  <!-- Header Navigation -->
+  <header *ngIf="authService.isAuthenticated()" class="header">
+    <nav class="nav-container">
+      <!-- Brand Logo -->
+      <div class="nav-brand">
+        <a routerLink="/dashboard" class="logo">
+          <span class="logo-icon">✈️</span>
+          <span class="logo-text">
+            <span class="eco-text">Eco</span><span class="jet-text">Jet</span>
+            <span class="certificates-text">Certificates</span>
+          </span>
+        </a>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="nav-links">
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">📊</span>
+          Dashboard
+        </a>
+        <a routerLink="/orders" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">📋</span>
+          Orders
+        </a>
+        <a routerLink="/certificates" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">🏆</span>
+          Certificates
+        </a>
+        <a routerLink="/orders/create" routerLinkActive="active" class="nav-link">
+          <span class="nav-icon">➕</span>
+          New Order
+        </a>
+        <a *ngIf="currentUser?.role === 'ADMIN'" routerLink="/admin" routerLinkActive="active" class="nav-link admin-link">
+          <span class="nav-icon">⚙️</span>
+          Admin
+        </a>
+      </div>
+
+      <!-- User Profile Dropdown -->
+      <div class="nav-user" *ngIf="currentUser">
+        <div class="user-dropdown"
+             (click)="toggleUserDropdown($event)"
+             (mouseenter)="onDropdownMouseEnter()"
+             (mouseleave)="onDropdownMouseLeave()">
+          <div class="user-avatar">
+            {{ (currentUser.firstName || currentUser.email).charAt(0).toUpperCase() }}
+          </div>
+          <div class="user-info">
+            <div class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</div>
+            <div class="user-company">{{ currentUser.company || 'EcoJet Member' }}</div>
+          </div>
+          <div class="dropdown-arrow">
+            <span [class.rotated]="isUserDropdownOpen">⌄</span>
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div class="dropdown-menu"
+               [class.show]="isUserDropdownOpen"
+               (mouseenter)="onDropdownMouseEnter()"
+               (mouseleave)="onDropdownMouseLeave()">
+            <a routerLink="/profile" class="dropdown-item" (click)="closeUserDropdown()">
+              <span class="dropdown-icon">👤</span>
+              View Profile
+            </a>
+            <a routerLink="/docs" class="dropdown-item" (click)="closeUserDropdown()">
+              <span class="dropdown-icon">📚</span>
+              Documentation
+            </a>
+            <div class="dropdown-divider"></div>
+            <button (click)="logout()" class="dropdown-item logout-item">
+              <span class="dropdown-icon">🚪</span>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content" [class.authenticated]="authService.isAuthenticated()">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <footer *ngIf="authService.isAuthenticated()" class="footer">
+    <div class="footer-content">
+      <!-- Company Info -->
+      <div class="footer-section">
+        <h3 class="footer-title">EcoJet Certificates</h3>
+        <p class="footer-text">
+          Accelerating sustainable aviation through innovative SAF certificate trading.
+          Join us in creating a greener future for aviation.
+        </p>
+      </div>
+
+      <!-- Environmental Impact -->
+      <div class="footer-section">
+        <h3 class="footer-title">Environmental Impact</h3>
+        <div class="impact-stats">
+          <div class="impact-item">
+            <span class="impact-icon">🌍</span>
+            <span class="impact-text">Carbon emissions reduced daily</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-icon">✈️</span>
+            <span class="impact-text">Airlines committed to sustainability</span>
+          </div>
+          <div class="impact-item">
+            <span class="impact-icon">🌱</span>
+            <span class="impact-text">SAF certificates traded</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support Links -->
+      <div class="footer-section">
+        <h3 class="footer-title">Support & Resources</h3>
+        <div class="support-links">
+          <a href="#" class="support-link">
+            <span class="support-icon">📞</span>
+            Contact Support
+          </a>
+          <a routerLink="/docs" class="support-link">
+            <span class="support-icon">📚</span>
+            Documentation
+          </a>
+          <a href="#" class="support-link">
+            <span class="support-icon">🔒</span>
+            Privacy Policy
+          </a>
+          <a href="#" class="support-link">
+            <span class="support-icon">⚖️</span>
+            Terms of Service
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <div class="footer-copyright">
+        © {{ currentYear }} EcoJet Certificates. All rights reserved.
+      </div>
+      <div class="footer-badges">
+        <span class="badge">🌿 Carbon Neutral</span>
+        <span class="badge">🔒 SOC 2 Certified</span>
+        <span class="badge">✅ ISAE 3402</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notifications -->
+  <app-toast></app-toast>
+</div>

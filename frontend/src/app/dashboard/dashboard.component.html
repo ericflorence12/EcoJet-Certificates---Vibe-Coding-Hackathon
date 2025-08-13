@@ -1,0 +1,237 @@
+<div class="dashboard">
+  <!-- Welcome Header -->
+  <div class="dashboard-header">
+    <div class="welcome-section">
+      <h1 class="welcome-title">
+        {{ getGreeting() }}, {{ currentUser?.firstName || 'User' }}! 👋
+      </h1>
+      <p class="welcome-subtitle">
+        Welcome to your EcoJet Certificates dashboard. Track your orders, monitor environmental impact, and manage your sustainable aviation fuel certificates.
+      </p>
+    </div>
+
+    <div class="quick-actions">
+      <button routerLink="/orders/create" class="btn btn-primary">
+        <span class="btn-icon">➕</span>
+        New Order
+      </button>
+      <button routerLink="/orders" class="btn btn-ghost">
+        <span class="btn-icon">📋</span>
+        View Orders
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner-large"></div>
+    <p>Loading your dashboard...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="error-container">
+    <div class="alert alert-error">
+      <span class="alert-icon">⚠️</span>
+      {{ error }}
+    </div>
+    <button (click)="loadStatistics()" class="btn btn-outline">
+      <span class="btn-icon">🔄</span>
+      Retry
+    </button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && !error && statistics" class="dashboard-content">
+    <!-- Key Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card stat-card-primary">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatNumber(statistics.totalOrders) }}</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-success">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatNumber(statistics.completedOrders) }}</div>
+          <div class="stat-label">Completed Orders</div>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-warning">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatNumber(statistics.pendingOrders) }}</div>
+          <div class="stat-label">Pending Orders</div>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-green">
+        <div class="stat-icon">🌱</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatNumber(statistics.totalSafVolume) }}</div>
+          <div class="stat-label">SAF Volume (L)</div>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-blue">
+        <div class="stat-icon">⛽</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatNumber(statistics.totalSafVolume) }}</div>
+          <div class="stat-label">SAF Volume (L)</div>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-purple">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatCurrency(statistics.totalRevenue) }}</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Overview -->
+    <div class="overview-section">
+      <h2>Quick Overview</h2>
+      <div class="overview-cards">
+        <div class="overview-card">
+          <div class="overview-header">
+            <h3>Order Summary</h3>
+            <span class="overview-icon">📋</span>
+          </div>
+          <div class="overview-content">
+            <div class="overview-stat">
+              <span class="value">{{ statistics.totalOrders }}</span>
+              <span class="label">Total Orders</span>
+            </div>
+            <div class="overview-stat">
+              <span class="value">{{ formatPercent(getCompletionRate()) }}%</span>
+              <span class="label">Completion Rate</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="overview-card">
+          <div class="overview-header">
+            <h3>SAF Impact</h3>
+            <span class="overview-icon">🌱</span>
+          </div>
+          <div class="overview-content">
+            <div class="overview-stat">
+              <span class="value">{{ formatNumber(statistics.totalSafVolume) }}L</span>
+              <span class="label">SAF Volume</span>
+            </div>
+            <div class="overview-stat">
+              <span class="value">{{ formatCurrency(statistics.totalRevenue) }}</span>
+              <span class="label">Total Invested</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="activity-section">
+      <div class="section-header">
+        <h2>Recent Activity</h2>
+        <button routerLink="/orders" class="btn btn-ghost btn-sm">
+          View All Orders
+        </button>
+      </div>
+
+      <div *ngIf="recentOrders && recentOrders.length > 0" class="activity-list">
+        <div *ngFor="let order of recentOrders" class="activity-item">
+          <div class="activity-icon" [ngClass]="getActivityIconClass(order.status)">
+            {{ getActivityIcon(order.status) }}
+          </div>
+          <div class="activity-content">
+            <div class="activity-title">
+              Order #{{ order.id }} - {{ order.customerName }}
+            </div>
+            <div class="activity-details">
+              <span class="detail">{{ formatNumber(order.quantity) }}L</span>
+              <span class="detail">{{ formatCurrency(order.totalPrice) }}</span>
+              <span class="detail status" [ngClass]="'status-' + order.status.toLowerCase()">
+                {{ getStatusDisplay(order.status) }}
+              </span>
+            </div>
+          </div>
+          <div class="activity-time">
+            {{ formatDate(order.createdAt) }}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!recentOrders || recentOrders.length === 0" class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>No Recent Orders</h3>
+        <p>Start by creating your first SAF certificate order.</p>
+        <button routerLink="/orders/create" class="btn btn-primary">
+          Create First Order
+        </button>
+      </div>
+    </div>
+
+    <!-- Environmental Impact -->
+    <div class="impact-section">
+      <h2>Environmental Impact</h2>
+      <div class="impact-card">
+        <div class="impact-visual">
+          <div class="impact-chart">
+            <div class="chart-segment chart-saf" [style.width.%]="getSafPercentage()">
+              <span class="chart-label">{{ formatNumber(statistics.totalSafVolume) }}L SAF</span>
+            </div>
+            <div class="chart-label-total">Total Sustainable Aviation Fuel Brokered</div>
+          </div>
+        </div>
+        <div class="impact-details">
+          <div class="impact-stat">
+            <div class="stat-value text-green">{{ formatNumber(statistics.totalSafVolume) }}L</div>
+            <div class="stat-label">Sustainable Aviation Fuel</div>
+          </div>
+          <div class="impact-stat">
+            <div class="stat-value text-blue">{{ formatCurrency(statistics.totalRevenue) }}</div>
+            <div class="stat-label">Investment in SAF</div>
+          </div>
+          <div class="impact-stat">
+            <div class="stat-value text-purple">{{ statistics.completedOrders }}</div>
+            <div class="stat-label">Completed Transactions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions-section">
+      <h2>Quick Actions</h2>
+      <div class="action-cards">
+        <button routerLink="/orders/create" class="action-card action-primary">
+          <div class="action-icon">➕</div>
+          <div class="action-content">
+            <h3>Create New Order</h3>
+            <p>Start a new SAF certificate order</p>
+          </div>
+        </button>
+
+        <button routerLink="/orders" class="action-card action-secondary">
+          <div class="action-icon">📋</div>
+          <div class="action-content">
+            <h3>Manage Orders</h3>
+            <p>View and manage existing orders</p>
+          </div>
+        </button>
+
+        <button routerLink="/profile" class="action-card action-accent">
+          <div class="action-icon">⚙️</div>
+          <div class="action-content">
+            <h3>Account Settings</h3>
+            <p>Update your profile and preferences</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,170 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <div class="logo">
+        <span class="logo-icon">🌱</span>
+        <span class="logo-text">EcoJet Certificates</span>
+      </div>
+      <p class="login-subtitle">
+        {{ isLoginMode ? 'Welcome back' : 'Join us' }} to accelerate sustainable aviation
+      </p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="error" class="alert alert-error">
+      <span class="alert-icon">⚠️</span>
+      {{ error }}
+    </div>
+
+    <!-- Success Alert -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      <span class="alert-icon">✅</span>
+      {{ successMessage }}
+    </div>
+
+    <!-- Login Form -->
+    <form *ngIf="isLoginMode" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="loginEmail" class="form-label">Email Address</label>
+        <input
+          id="loginEmail"
+          type="email"
+          formControlName="email"
+          class="form-input"
+          [class.error]="getFieldError('login', 'email')"
+          placeholder="Enter your email"
+        />
+        <div *ngIf="getFieldError('login', 'email')" class="field-error">
+          {{ getFieldError('login', 'email') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="loginPassword" class="form-label">Password</label>
+        <input
+          id="loginPassword"
+          type="password"
+          formControlName="password"
+          class="form-input"
+          [class.error]="getFieldError('login', 'password')"
+          placeholder="Enter your password"
+        />
+        <div *ngIf="getFieldError('login', 'password')" class="field-error">
+          {{ getFieldError('login', 'password') }}
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="isLoading || !loginForm.valid" class="btn btn-primary btn-full">
+        <span *ngIf="isLoading" class="loading-spinner"></span>
+        {{ isLoading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form *ngIf="!isLoginMode" [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="registerEmail" class="form-label">Email Address</label>
+          <input
+            id="registerEmail"
+            type="email"
+            formControlName="email"
+            class="form-input"
+            [class.error]="getFieldError('register', 'email')"
+            placeholder="Enter your email"
+          />
+          <div *ngIf="getFieldError('register', 'email')" class="field-error">
+            {{ getFieldError('register', 'email') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="registerPassword" class="form-label">Password</label>
+          <input
+            id="registerPassword"
+            type="password"
+            formControlName="password"
+            class="form-input"
+            [class.error]="getFieldError('register', 'password')"
+            placeholder="Choose a password"
+          />
+          <div *ngIf="getFieldError('register', 'password')" class="field-error">
+            {{ getFieldError('register', 'password') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            class="form-input"
+            [class.error]="getFieldError('register', 'confirmPassword')"
+            placeholder="Confirm your password"
+          />
+          <div *ngIf="getFieldError('register', 'confirmPassword')" class="field-error">
+            {{ getFieldError('register', 'confirmPassword') }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="companyName" class="form-label">Company Name</label>
+          <input
+            id="companyName"
+            type="text"
+            formControlName="companyName"
+            class="form-input"
+            [class.error]="getFieldError('register', 'companyName')"
+            placeholder="Your company name"
+          />
+          <div *ngIf="getFieldError('register', 'companyName')" class="field-error">
+            {{ getFieldError('register', 'companyName') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="contactName" class="form-label">Contact Name</label>
+          <input
+            id="contactName"
+            type="text"
+            formControlName="contactName"
+            class="form-input"
+            [class.error]="getFieldError('register', 'contactName')"
+            placeholder="Your full name"
+          />
+          <div *ngIf="getFieldError('register', 'contactName')" class="field-error">
+            {{ getFieldError('register', 'contactName') }}
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="isLoading || !registerForm.valid" class="btn btn-primary btn-full">
+        <span *ngIf="isLoading" class="loading-spinner"></span>
+        {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+      </button>
+    </form>
+
+    <!-- Mode Toggle -->
+    <div class="login-footer">
+      <p>
+        {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
+        <button type="button" (click)="toggleMode()" class="link-button">
+          {{ isLoginMode ? 'Sign up' : 'Sign in' }}
+        </button>
+      </p>
+    </div>
+  </div>
+
+  <!-- Background Elements -->
+  <div class="bg-decoration">
+    <div class="bg-circle bg-circle-1"></div>
+    <div class="bg-circle bg-circle-2"></div>
+    <div class="bg-circle bg-circle-3"></div>
+  </div>
+</div>

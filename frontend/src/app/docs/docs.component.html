@@ -1,0 +1,93 @@
+<div class="docs-container">
+  <div class="docs-header">
+    <h1 class="docs-title">📚 Documentation Center</h1>
+    <p class="docs-subtitle">
+      Comprehensive guides, regulations, and technical documentation for sustainable aviation fuel certificates and carbon credit trading.
+    </p>
+  </div>
+
+  <div class="docs-content">
+    <!-- Search Bar -->
+    <div class="search-container">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search documentation..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+      >
+      <span class="search-icon">🔍</span>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs">
+      <button
+        *ngFor="let category of categories"
+        class="category-tab"
+        [class.active]="selectedCategory === category"
+        (click)="selectCategory(category)"
+      >
+        {{ category === 'all' ? 'All Documents' : (category | titlecase) }}
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading documentation...</div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h3 class="error-title">Failed to Load Documentation</h3>
+      <p class="error-message">{{ error }}</p>
+      <button class="retry-button" (click)="loadDocuments()">
+        Try Again
+      </button>
+    </div>
+
+    <!-- Documents Grid -->
+    <div *ngIf="!isLoading && !error" class="docs-grid">
+      <div
+        *ngFor="let doc of filteredDocuments"
+        class="doc-card"
+        (click)="openDocument(doc)"
+      >
+        <span class="doc-icon">{{ doc.icon }}</span>
+        <h3 class="doc-title">{{ doc.title }}</h3>
+        <p class="doc-description">{{ doc.description }}</p>
+        <div class="doc-meta">
+          <span class="doc-category">{{ doc.category | titlecase }}</span>
+          <span class="doc-date">{{ doc.lastModified | date:'shortDate' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div *ngIf="!isLoading && !error && filteredDocuments.length === 0" class="no-results">
+      <div class="no-results-icon">📄</div>
+      <h3 class="no-results-title">No Documents Found</h3>
+      <p class="no-results-message">
+        No documentation matches your current search criteria. Try adjusting your search terms or selecting a different category.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Document Viewer Modal -->
+<div *ngIf="selectedDocument" class="viewer-modal" (click)="closeViewer($event)">
+  <div class="viewer-content" (click)="$event.stopPropagation()">
+    <div class="viewer-header">
+      <h2 class="viewer-title">{{ selectedDocument.title }}</h2>
+      <button class="close-button" (click)="closeViewer()">×</button>
+    </div>
+    <div class="viewer-body">
+      <div *ngIf="documentContent" class="markdown-content" [innerHTML]="documentContent"></div>
+      <div *ngIf="!documentContent" class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading document content...</div>
+      </div>
+    </div>
+  </div>
+</div>

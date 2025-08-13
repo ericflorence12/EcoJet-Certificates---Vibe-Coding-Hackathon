@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Backend",
+      "type": "shell",
+      "command": "./gradlew bootRun",
+      "group": "build",
+      "presentation": {"reveal": "always"},
+      "problemMatcher": ["$gradle"],
+      "options": { "cwd": "${workspaceFolder}/backend" }
+    },
+    {
+      "label": "Build Backend",
+      "type": "shell",
+      "command": "./gradlew clean build",
+      "group": "build",
+      "problemMatcher": ["$gradle"],
+      "options": {"cwd": "${workspaceFolder}/backend" }
+    },
+    {
+      "label": "Serve Frontend",
+      "type": "shell",
+      "command": "npm start",
+      "group": "build",
+      "presentation": {"reveal": "always"},
+      "options": {"cwd": "${workspaceFolder}/frontend" }
+    }
+  ]
+}

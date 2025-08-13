@@ -1,0 +1,370 @@
+<div class="create-order-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Create New Order ✈️</h1>
+    <p class="page-subtitle">Calculate emissions and purchase SAF certificates for your flight</p>
+  </div>
+
+  <!-- Progress Indicator -->
+  <div class="progress-indicator">
+    <div class="progress-step" [class.active]="step >= 1" [class.completed]="step > 1">
+      <div class="step-number">1</div>
+      <div class="step-label">Flight Details</div>
+    </div>
+
+    <div class="progress-line" [class.completed]="step > 1"></div>
+
+    <div class="progress-step" [class.active]="step >= 2" [class.completed]="step > 2">
+      <div class="step-number">2</div>
+      <div class="step-label">Review Quote</div>
+    </div>
+
+    <div class="progress-line" [class.completed]="step > 2"></div>
+
+    <div class="progress-step" [class.active]="step >= 3">
+      <div class="step-number">3</div>
+      <div class="step-label">Order Created</div>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="error" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    {{ error }}
+  </div>
+
+  <!-- Step 1: Flight Details Form -->
+  <div *ngIf="step === 1" class="step-content">
+    <div class="form-card">
+      <div class="form-header">
+        <h2 class="form-title">Flight Information ✈️</h2>
+        <p class="form-subtitle">Enter your flight details to calculate emissions and SAF requirements</p>
+      </div>
+
+      <form [formGroup]="orderForm" (ngSubmit)="onGetQuote()" class="order-form">
+        <div class="form-grid">
+          <!-- Flight Number -->
+          <div class="form-group">
+            <label for="flightNumber" class="form-label">Flight Number</label>
+            <input
+              id="flightNumber"
+              type="text"
+              formControlName="flightNumber"
+              class="form-input"
+              [class.error]="getFieldError('flightNumber')"
+              placeholder="e.g., AA1234"
+              maxlength="10"
+            />
+            <div *ngIf="getFieldError('flightNumber')" class="field-error">
+              {{ getFieldError('flightNumber') }}
+            </div>
+          </div>
+
+          <!-- Flight Date -->
+          <div class="form-group">
+            <label for="flightDate" class="form-label">Flight Date</label>
+            <input
+              id="flightDate"
+              type="date"
+              formControlName="flightDate"
+              class="form-input"
+              [class.error]="getFieldError('flightDate')"
+            />
+            <div *ngIf="getFieldError('flightDate')" class="field-error">
+              {{ getFieldError('flightDate') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <!-- Departure Airport -->
+          <div class="form-group">
+            <label for="departureAirport" class="form-label">Departure Airport</label>
+            <input
+              id="departureAirport"
+              type="text"
+              formControlName="departureAirport"
+              class="form-input"
+              [class.error]="getFieldError('departureAirport')"
+              placeholder="e.g., LAX"
+              maxlength="3"
+              style="text-transform: uppercase;"
+            />
+            <div *ngIf="getFieldError('departureAirport')" class="field-error">
+              {{ getFieldError('departureAirport') }}
+            </div>
+          </div>
+
+          <!-- Arrival Airport -->
+          <div class="form-group">
+            <label for="arrivalAirport" class="form-label">Arrival Airport</label>
+            <input
+              id="arrivalAirport"
+              type="text"
+              formControlName="arrivalAirport"
+              class="form-input"
+              [class.error]="getFieldError('arrivalAirport')"
+              placeholder="e.g., JFK"
+              maxlength="3"
+              style="text-transform: uppercase;"
+            />
+            <div *ngIf="getFieldError('arrivalAirport')" class="field-error">
+              {{ getFieldError('arrivalAirport') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Auto-calculated Emissions -->
+        <div class="form-group">
+          <label class="form-label">Estimated Emissions (kg CO₂)</label>
+
+          <!-- Calculate Emissions Button -->
+          <div *ngIf="!calculatedEmissions && !isLoadingEmissions" class="emissions-calc-section">
+            <button
+              type="button"
+              class="btn btn-outline emissions-calc-btn"
+              [disabled]="!isValidFlightInfo()"
+              (click)="calculateEmissions()">
+              <span class="btn-icon">🧮</span>
+              Calculate Emissions
+            </button>
+            <div class="input-help">
+              We'll automatically calculate CO₂ emissions based on your flight details.
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="isLoadingEmissions" class="emissions-loading">
+            <div class="loading-spinner"></div>
+            <span>Calculating emissions...</span>
+          </div>
+
+          <!-- Calculated Emissions Display -->
+          <div *ngIf="calculatedEmissions && !isLoadingEmissions" class="emissions-display">
+            <div class="emissions-header">
+              <div class="emissions-value">
+                <span class="value">{{ formatNumber(calculatedEmissions) }}</span>
+                <span class="unit">kg CO₂</span>
+              </div>
+              <div class="calculation-status">
+                <span class="status-icon">✅</span>
+                <span class="status-text">Calculated</span>
+              </div>
+            </div>
+
+            <div *ngIf="emissionDetails" class="emissions-breakdown">
+              <div class="detail-row">
+                <span class="detail-label">✈️ Aircraft Type:</span>
+                <span class="detail-value">{{ emissionDetails.aircraftType || 'N/A' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">📏 Distance:</span>
+                <span class="detail-value">{{ formatNumber(emissionDetails.distance) }} km</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">🕒 Calculated At:</span>
+                <span class="detail-value">{{ formatCalculationTime(emissionDetails.calculatedAt) }}</span>
+              </div>
+            </div>
+
+            <div class="emissions-actions">
+              <span class="calculation-note">Emissions calculated based on flight route and aircraft type</span>
+              <button
+                type="button"
+                class="btn btn-link recalc-btn"
+                (click)="calculateEmissions()">
+                🔄 Recalculate
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label for="notes" class="form-label">Notes (Optional)</label>
+          <textarea
+            id="notes"
+            formControlName="notes"
+            class="form-textarea"
+            placeholder="Additional information or special requirements..."
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            [disabled]="!orderForm.valid || !calculatedEmissions || isLoadingQuote || isLoadingEmissions"
+            class="btn btn-primary btn-lg"
+          >
+            <span *ngIf="isLoadingQuote" class="loading-spinner"></span>
+            {{ isLoadingQuote ? 'Calculating...' : 'Get Quote' }}
+            <span *ngIf="!isLoadingQuote" class="btn-icon">💰</span>
+          </button>
+
+          <div *ngIf="!calculatedEmissions && isValidFlightInfo()" class="form-help">
+            Please calculate emissions first to get a quote.
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Step 2: Quote Review -->
+  <div *ngIf="step === 2 && currentQuote" class="step-content">
+    <div class="quote-card">
+      <div class="quote-header">
+        <h2 class="quote-title">Your SAF Certificate Quote 📊</h2>
+        <p class="quote-subtitle">Review the details and environmental impact of your order</p>
+      </div>
+
+      <!-- Flight Summary -->
+      <div class="quote-section">
+        <h3 class="section-title">✈️ Flight Summary</h3>
+        <div class="flight-summary">
+          <div class="summary-item">
+            <span class="summary-label">Flight:</span>
+            <span class="summary-value">{{ orderForm.value.flightNumber }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Route:</span>
+            <span class="summary-value">{{ orderForm.value.departureAirport }} → {{ orderForm.value.arrivalAirport }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Date:</span>
+            <span class="summary-value">{{ orderForm.value.flightDate | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Environmental Impact -->
+      <div class="quote-section">
+        <h3 class="section-title">🌱 Environmental Impact</h3>
+        <div class="impact-visual">
+          <div class="impact-card impact-primary">
+            <div class="impact-icon">💨</div>
+            <div class="impact-content">
+              <div class="impact-value">{{ formatNumber(currentQuote.flightEmissions) }}</div>
+              <div class="impact-label">kg CO₂ Emissions</div>
+            </div>
+          </div>
+
+          <div class="impact-arrow">→</div>
+
+          <div class="impact-card impact-success">
+            <div class="impact-icon">🌱</div>
+            <div class="impact-content">
+              <div class="impact-value">{{ formatNumber(currentQuote.carbonReduction) }}</div>
+              <div class="impact-label">kg CO₂ Reduced</div>
+              <div class="impact-percentage">{{ calculateSavingsPercentage() }}% reduction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAF Details -->
+      <div class="quote-section">
+        <h3 class="section-title">⛽ SAF Certificate Details</h3>
+        <div class="saf-details">
+          <div class="detail-row">
+            <span class="detail-label">Recommended SAF Volume:</span>
+            <span class="detail-value">{{ formatNumber(currentQuote.recommendedSafVolume) }} L</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Price per Liter:</span>
+            <span class="detail-value">{{ formatCurrency(currentQuote.pricePerLiter) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Quote Valid Until:</span>
+            <span class="detail-value">{{ currentQuote.validUntil | date:'short' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Breakdown -->
+      <div class="quote-section">
+        <h3 class="section-title">💰 Price Breakdown</h3>
+        <div class="price-breakdown">
+          <div class="price-row">
+            <span class="price-label">Base Cost:</span>
+            <span class="price-value">{{ formatCurrency(currentQuote.priceBreakdown.baseCost) }}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Carbon Credit:</span>
+            <span class="price-value">{{ formatCurrency(currentQuote.priceBreakdown.carbonCredit) }}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Processing Fee:</span>
+            <span class="price-value">{{ formatCurrency(currentQuote.priceBreakdown.processingFee) }}</span>
+          </div>
+          <div class="price-row">
+            <span class="price-label">Regulatory Fee:</span>
+            <span class="price-value">{{ formatCurrency(currentQuote.priceBreakdown.regulatoryFee) }}</span>
+          </div>
+          <div class="price-row price-total">
+            <span class="price-label">Total Amount:</span>
+            <span class="price-value">{{ formatCurrency(currentQuote.totalPrice) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="quote-actions">
+        <button (click)="onBackToFlightDetails()" class="btn btn-outline">
+          <span class="btn-icon">←</span>
+          Back to Flight Details
+        </button>
+
+        <button
+          (click)="onCreateOrder()"
+          [disabled]="isCreatingOrder"
+          class="btn btn-primary btn-lg"
+        >
+          <span *ngIf="isCreatingOrder" class="loading-spinner"></span>
+          {{ isCreatingOrder ? 'Creating Order...' : 'Create Order' }}
+          <span *ngIf="!isCreatingOrder" class="btn-icon">🚀</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Order Created -->
+  <div *ngIf="step === 3" class="step-content">
+    <div class="success-card">
+      <div class="success-header">
+        <div class="success-icon">🎉</div>
+        <h2 class="success-title">Order Created Successfully!</h2>
+        <p class="success-subtitle">Your SAF certificate order has been placed and is being processed.</p>
+      </div>
+
+      <div class="success-content">
+        <div class="success-message">
+          <p>Thank you for choosing sustainable aviation fuel! Your order will be processed within 24-48 hours, and you'll receive an email confirmation shortly.</p>
+
+          <div class="next-steps">
+            <h3>What happens next?</h3>
+            <ul>
+              <li>📧 You'll receive an email confirmation with your order details</li>
+              <li>🔄 Your order will be processed and verified</li>
+              <li>📄 Once completed, your SAF certificate will be available for download</li>
+              <li>🌱 Your environmental impact will be tracked in your dashboard</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button (click)="onGoToOrders()" class="btn btn-primary">
+          <span class="btn-icon">📋</span>
+          View My Orders
+        </button>
+
+        <button (click)="onCreateAnother()" class="btn btn-outline">
+          <span class="btn-icon">➕</span>
+          Create Another Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
